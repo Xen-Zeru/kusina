@@ -8,7 +8,14 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+// CORS: open by default (local dev). In production (Render), set
+// FRONTEND_URL to your Vercel URL(s), comma-separated, to restrict access:
+// FRONTEND_URL=https://kusina.vercel.app
+const frontendUrls = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+app.use(cors({ origin: frontendUrls.length > 0 ? frontendUrls : true }));
 app.use(express.json());
 
 // Routes

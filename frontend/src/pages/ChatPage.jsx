@@ -119,6 +119,10 @@ export default function ChatPage() {
     ]);
   };
 
+// Backend base URL: set VITE_API_URL in production (Vercel),
+// falls back to local dev server.
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+
   const sendMessage = async (text) => {
     const userMessage = (text ?? input).trim();
     if (!userMessage || loading) return;
@@ -126,7 +130,7 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, { sender: 'user', text: userMessage, time: timeNow() }]);
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/chat', {
+      const response = await fetch(`${API_BASE}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage }),
