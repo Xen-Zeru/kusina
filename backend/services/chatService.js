@@ -12,12 +12,28 @@ const DEFAULT_MODELS = [
   "gemini-1.5-flash-8b",
 ];
 
-const generateResponse = async (userMessage) => {
+const generateResponse = async (userMessage, history = []) => {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey || apiKey === "your_gemini_api_key_here") {
     return `[Mock AI Response]: You said "${userMessage}". (Please set a valid GEMINI_API_KEY in backend/.env)`;
   }
+
+  // Normalize client history to Gemini format, capped to the last
+  // MAX_HISTORY messages to bound tokens/latency per request.
+  const MAX_HISTORY = 12;
+  const chatHistory = Array.isArray(history)
+    ? history
+        .filter(
+          (m) =>
+            m &&
+            typeof m.text === "string" &&
+            m.text.trim() !== "" &&
+            (m.role === "user" || m.role === "model"),
+        )
+        .slice(-MAX_HISTORY)
+        .map((m) => ({ role: m.role, parts: [{ text: m.text }] }))
+    : [];
 
   // Construct candidate list (custom GEMINI_MODEL env var prioritized if set)
   const candidateModels = [];
@@ -50,7 +66,10 @@ const generateResponse = async (userMessage) => {
           "If the user writes in Tagalog, reply in Tagalog. If Spanish, reply in Spanish. If French, reply in French, and so on for any language. " +
           "The food-only refusal message must also be translated into the user's language.",
       });
-      const result = await model.generateContent(userMessage);
+      const result =
+        chatHistory.length > 0
+          ? await model.startChat({ history: chatHistory }).sendMessage(userMessage)
+          : await model.generateContent(userMessage);
       const response = await result.response;
       return response.text();
     } catch (error) {

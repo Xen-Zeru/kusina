@@ -127,13 +127,18 @@ const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000').repla
     const userMessage = (text ?? input).trim();
     if (!userMessage || loading) return;
     setInput('');
+    // Snapshot prior turns as Gemini history (excludes the message being sent).
+    const historyForRequest = messages
+      .filter((m) => m && (m.sender === 'user' || m.sender === 'bot') && m.text && m.text.trim() !== '')
+      .slice(-12)
+      .map((m) => ({ role: m.sender === 'user' ? 'user' : 'model', text: m.text }));
     setMessages((prev) => [...prev, { sender: 'user', text: userMessage, time: timeNow() }]);
     setLoading(true);
     try {
       const response = await fetch(`${API_BASE}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage }),
+        body: JSON.stringify({ message: userMessage, history: historyForRequest }),
       });
       const data = await response.json();
       const botReply = data.reply || data.error || 'No response received from backend.';

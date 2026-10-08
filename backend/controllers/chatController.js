@@ -2,13 +2,15 @@ const { generateResponse } = require('../services/chatService');
 
 const handleChat = async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, history } = req.body;
 
     if (!message || message.trim() === '') {
       return res.status(400).json({ error: 'Message content is required.' });
     }
 
-    const reply = await generateResponse(message);
+    // history is optional ([{ role: 'user'|'model', text: '...' }]);
+    // missing/empty history behaves as a single-turn request.
+    const reply = await generateResponse(message, history);
     res.json({ reply });
   } catch (error) {
     console.error('Error handling chat request:', error);
