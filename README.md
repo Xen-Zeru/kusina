@@ -1,132 +1,97 @@
-# 🤖 Simple AI Chatbot Starter — CCIT06 Activity
+# 🍰 Kusina — Dessert Chatbot
 
-A pre-configured **MERN stack (React + Express)** starter repository designed for the **CCIT06** laboratory activity. 
+Kusina is a dessert-themed AI chatbot website for **CCIT-06**. Browse **15 sample dishes**,
+then chat with a Gemini-powered assistant that answers **food and dessert questions only** —
+in **any language** you write in. No database, no login.
 
-This repository provides a fully connected frontend and backend scaffold. Students are expected to complete the activity by implementing their own **AI API integration** (e.g., Google Gemini API, OpenAI, etc.) in the backend service layer.
+## ✨ Features
 
----
+- **Topbar navigation** — About, Feature (15 dishes), Chat (separate `/chat` page)
+- **Hero About section** with featured dish and quick actions
+- **15 dish cards** — photo, category, rating, time, difficulty, and an "Ask AI about this" button that opens chat pre-filled with the dish
+- **AI chat** — markdown-rendered replies, typing indicator, timestamps, suggestion chips,
+  session-persisted history (survives refresh, cleared when the browser closes)
+- **Food-only AI** — non-food questions get a polite refusal (translated to your language)
+- **Multilingual** — the AI detects your language and replies in it (e.g. Tagalog, Spanish)
 
-## 🎯 Activity Objective (For Students)
-Your objective for this activity is to:
-1. Obtain an API key from an AI service provider (e.g., [Google AI Studio](https://aistudio.google.com/) for Gemini).
-2. Configure your environment variables in `backend/.env`.
-3. Complete the API call logic inside **`backend/services/chatService.js`** to replace the mock response with real AI-generated replies.
+## 🛠️ Tech Stack
 
----
+- **Frontend**: React, Vite, Tailwind CSS v4, React Router, Lucide icons, `react-markdown` + `remark-gfm`
+- **Backend**: Node.js, Express, `cors`, `dotenv`, `@google/generative-ai` (Gemini)
+- **Package manager**: `pnpm`
 
-## 🛠️ Tech Stack & Project Structure
+## 📁 Project Structure
 
-- **Frontend**: React (JSX), Vanilla CSS, Native `fetch()` API
-- **Backend**: Node.js, Express.js, `cors`, `dotenv`, `@google/generative-ai`
-- **Package Manager**: `pnpm`
-
-### Directory Layout
 ```text
-ai_chat/
+Kusina/
 ├── backend/
-│   ├── controllers/       # Handles incoming request logic (chatController.js)
-│   ├── routes/            # API endpoints definition (chatRoutes.js)
-│   ├── services/          # ⭐ STUDENT TASK: AI API logic (chatService.js)
-│   ├── .env.example       # Environment variables template
-│   └── server.js          # Express server entry point
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx        # Simple React Chatbot UI
-│   │   ├── App.css        # Clean chat styles
-│   │   └── index.jsx      # React DOM renderer
-│   └── .env.example       # Frontend env template
-└── README.md              # Project documentation
+│   ├── controllers/chatController.js
+│   ├── routes/chatRoutes.js
+│   ├── services/chatService.js   # Gemini logic + food-only + multilingual prompt
+│   ├── server.js
+│   └── .env.example
+└── frontend/
+    ├── index.html
+    ├── vite.config.mjs
+    ├── public/images/            # 15 dish photos + logos.png
+    └── src/
+        ├── App.jsx               # Router: / and /chat
+        ├── components/Topbar.jsx
+        ├── components/Hero.jsx
+        ├── components/DishGrid.jsx
+        ├── pages/HomePage.jsx
+        ├── pages/ChatPage.jsx
+        └── data/dishes.js        # static 15-dish data (no DB)
 ```
-
----
 
 ## 🚀 Getting Started
 
-### 1. Prerequisites
-Ensure you have **Node.js** (v18+) and **pnpm** installed on your system.
+### Prerequisites
+
+Node.js v18+ and `pnpm` installed.
+
+### 1. Backend
+
 ```bash
-# Verify pnpm installation
-pnpm --version
+cd backend
+pnpm install
+cp .env.example .env
 ```
 
-### 2. Setup & Installation
+Add your key to `.env`:
 
-#### **Backend Setup**
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-2. Install dependencies:
-   ```bash
-   pnpm install
-   ```
-3. Create your `.env` file by copying `.env.example`:
-   ```bash
-   cp .env.example .env
-   ```
-4. Open `.env` and add your API key:
-   ```env
-   PORT=5000
-   GEMINI_API_KEY=your_actual_api_key_here
-   ```
-5. Start the backend development server:
-   ```bash
-   pnpm dev
-   ```
-   > Backend runs on `http://localhost:5000`
-
----
-
-#### **Frontend Setup**
-1. Open a **new terminal** and navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   pnpm install
-   ```
-3. Create your `.env` file from `.env.example`:
-   ```bash
-   cp .env.example .env
-   ```
-4. Start the frontend development server:
-   ```bash
-   pnpm start
-   ```
-   > Frontend runs on `http://localhost:3000`
-
----
-
-## 📝 Student Task Instructions
-
-Open **`backend/services/chatService.js`** and implement your AI API logic. 
-
-### Example Implementation (Google Gemini):
-```javascript
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-const generateResponse = async (userMessage) => {
-  const apiKey = process.env.GEMINI_API_KEY;
-
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not set in backend/.env');
-  }
-
-  // Initialize Gemini client
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
-  // Generate AI response
-  const result = await model.generateContent(userMessage);
-  const response = await result.response;
-  return response.text();
-};
-
-module.exports = { generateResponse };
+```env
+PORT=5000
+GEMINI_API_KEY=your_actual_api_key_here
 ```
 
----
+Start it:
+
+```bash
+pnpm start
+```
+
+> Backend runs on `http://localhost:5000`
+
+### 2. Frontend
+
+In a new terminal:
+
+```bash
+cd frontend
+pnpm install
+pnpm start
+```
+
+> Frontend runs on `http://localhost:3000`
+
+## 🤖 AI Behavior
+
+Configured in `backend/services/chatService.js` via the Gemini system instruction:
+
+1. **Food-only** — anything unrelated to food/cooking/desserts is refused.
+2. **Multilingual** — replies always match the user's language.
 
 ## 📄 License
-This repository is pre-configured for academic use in CCIT06 coursework.
+
+Academic use for CCIT-06 coursework.
