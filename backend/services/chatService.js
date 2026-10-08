@@ -21,19 +21,24 @@ const generateResponse = async (userMessage, history = []) => {
 
   // Normalize client history to Gemini format, capped to the last
   // MAX_HISTORY messages to bound tokens/latency per request.
+  // Leading model messages (e.g. the app greeting, which has no preceding
+  // user turn) are dropped so history starts with a user turn.
   const MAX_HISTORY = 12;
-  const chatHistory = Array.isArray(history)
-    ? history
-        .filter(
-          (m) =>
-            m &&
-            typeof m.text === "string" &&
-            m.text.trim() !== "" &&
-            (m.role === "user" || m.role === "model"),
-        )
-        .slice(-MAX_HISTORY)
-        .map((m) => ({ role: m.role, parts: [{ text: m.text }] }))
+  let chatHistory = Array.isArray(history)
+    ? history.filter(
+        (m) =>
+          m &&
+          typeof m.text === "string" &&
+          m.text.trim() !== "" &&
+          (m.role === "user" || m.role === "model"),
+      )
     : [];
+  while (chatHistory.length > 0 && chatHistory[0].role !== "user") {
+    chatHistory.shift();
+  }
+  chatHistory = chatHistory
+    .slice(-MAX_HISTORY)
+    .map((m) => ({ role: m.role, parts: [{ text: m.text }] }));
 
   // Construct candidate list (custom GEMINI_MODEL env var prioritized if set)
   const candidateModels = [];
